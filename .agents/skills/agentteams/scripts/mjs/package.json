@@ -1,0 +1,17 @@
+{
+  "name": "agentteams-mjs",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "AgentTeams orchestrator — plan analyzer, dependency DAG, token-budget slicer, HITL iteration loop.",
+  "engines": { "node": ">=20" },
+  "bin": { "agentteams": "./bin/agentteams" },
+  "main": "./src/index.mjs",
+  "exports": { ".": "./src/index.mjs" },
+  "scripts": {
+    "test": "node --test 'test/**/*.test.mjs'",
+    "lint": "echo 'lint: ok'",
+    "build": "echo 'build: ok'",
+    "noop": "node -e 'process.exit(0)'"
+  },
+  "files": ["src", "bin"]
+}

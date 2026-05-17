@@ -1,0 +1,35 @@
+#!/bin/sh
+# agentteams runtime selector — dispatches to the mjs or py implementation.
+#
+# Precedence:
+#   1. $AGENTTEAMS_RUNTIME (explicit: "mjs" | "py")
+#   2. auto (default) — prefer mjs if `node` is on $PATH, else fall back to py via `uv`
+#
+# All path resolution is anchored on this script's own location so the shim
+# works without any env vars and survives moves of the entire skill tree.
+
+DIR="$(cd "$(dirname "$0")/.." && pwd)"
+RT="${AGENTTEAMS_RUNTIME:-auto}"
+
+case "$RT" in
+  mjs)
+    exec node "$DIR/mjs/bin/agentteams" "$@"
+    ;;
+  py)
+    exec uv run --quiet --project "$DIR/py" -- agentteams "$@"
+    ;;
+  auto)
+    if command -v node >/dev/null 2>&1; then
+      exec node "$DIR/mjs/bin/agentteams" "$@"
+    elif command -v uv >/dev/null 2>&1; then
+      exec uv run --quiet --project "$DIR/py" -- agentteams "$@"
+    else
+      echo "agentteams: need 'node' or 'uv' on \$PATH (or set AGENTTEAMS_RUNTIME=mjs|py)" >&2
+      exit 127
+    fi
+    ;;
+  *)
+    echo "agentteams: unknown AGENTTEAMS_RUNTIME='$RT' (want: mjs | py | auto)" >&2
+    exit 2
+    ;;
+esac

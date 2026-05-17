@@ -1,0 +1,62 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  MJS_DIR: .agents/skills/agentteams/scripts/mjs
+  PY_DIR:  .agents/skills/agentteams/scripts/py
+
+jobs:
+  test-mjs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: make -C ${{ env.MJS_DIR }} ci-install
+      - run: make -C ${{ env.MJS_DIR }} test
+      - run: make -C ${{ env.MJS_DIR }} lint
+      - run: make -C ${{ env.MJS_DIR }} build
+
+  test-py:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - uses: astral-sh/setup-uv@v3
+      - run: make -C ${{ env.PY_DIR }} ci-install
+      - run: make -C ${{ env.PY_DIR }} test
+      - run: make -C ${{ env.PY_DIR }} lint
+      - run: make -C ${{ env.PY_DIR }} build
+
+  parity:
+    needs: [test-mjs, test-py]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - uses: astral-sh/setup-uv@v3
+      - run: make -C ${{ env.MJS_DIR }} ci-install
+      - run: make -C ${{ env.PY_DIR }} ci-install
+      - run: make parity
+
+  gate:
+    needs: [parity]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - uses: astral-sh/setup-uv@v3
+      - run: make -C ${{ env.MJS_DIR }} ci-install
+      - run: make -C ${{ env.PY_DIR }} ci-install
+      - run: make gate
