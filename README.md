@@ -90,7 +90,8 @@ make resume      # prints the prompt to paste after /clear
 ### Manage installed skills
 
 ```sh
-npx skills add agentteams                             # install one skill
+npx skills add carlosmarte/agent-skills-agentteams --list                  # list skills in this repo
+npx skills add carlosmarte/agent-skills-agentteams --skill agentteams      # install one skill
 npx skills list                                       # show what's installed
 npx skills update agentteams                          # pull latest version of one skill
 npx skills update -g                                  # update all global skills
